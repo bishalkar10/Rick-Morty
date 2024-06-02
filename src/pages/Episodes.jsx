@@ -46,6 +46,7 @@ export default function Episodes() {
     url.searchParams.append("page", page)
 
     async function fetchData(url) {
+      setError("")
       setLoading(true)
       try {
         const res = await fetch(url);

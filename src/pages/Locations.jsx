@@ -45,6 +45,8 @@ export default function Loations() {
     url.searchParams.append("page", page)
 
     async function fetchData(url) {
+      setError("") // reset the error to empty string so if we get error once and then try again and there is no error 
+                   // it will clear the error and the cards will render else cards will never render
       setLoading(true)
       try {
         const res = await fetch(url);
