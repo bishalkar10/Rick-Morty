@@ -84,7 +84,7 @@ export default function Characters() {
     url.searchParams.append("page", page);
 
     async function fetchData(url) {
-      setError("")
+      setError("") // clear any error before each api call else user can't see the loading screen.
       setLoading(true)
       try {
         const res = await fetch(url);
@@ -93,10 +93,10 @@ export default function Characters() {
           throw new Error("No character found")
         }
         setTotalPage(data.info.pages);
-        setCharacters([...data.results]);
+        setCharacters([...data.results]); // only add new card and delete the previous ones
       } catch (error) {
         setError(error.message)
-        setCharacters([])
+        setCharacters([]) // empty the characters array if any error occurs.
       } finally {
         setLoading(false)
       }
