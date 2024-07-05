@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import { CharacterCard } from "../components/Cards";
 import { Pagination } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,20 +9,14 @@ import Filter from "../components/Filter";
 import { LoadingCard } from "../components/Cards";
 
 export default function Characters() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [characters, setCharacters] = useState([]);
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
   const [showFilter, setShowFilter] = useState(false);
   const [error, setError] = useState("");
-  // this formData state is for controlled input fields
-  const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    gender: '',
-    species: '',
-    status: ''
-  });
+
   // filter state is used in the useEffect hook dependecy array
   const [filter, setFilter] = useState({
     name: "",
@@ -43,33 +39,57 @@ export default function Characters() {
     setPage(value);
   };
 
-  function updateFilter(newFilter) {
+  // Synchronize form data with searchParams
+  useEffect(() => {
+    const paramsObject = Object.fromEntries(searchParams.entries());
 
-    // trim() trailing white spaces of the values;
-    const trimmedNewFilter = {};
-    for (const key in newFilter) {
-      trimmedNewFilter[key] = newFilter[key].trim();
-    }
-    // two objects are never the same. everytime the setFilter updates there will be rerender
-    if (JSON.stringify(trimmedNewFilter) === JSON.stringify(filter)) {
-      return;
-    }
-    setFilter(prevFilter => ({ ...prevFilter, ...newFilter }));
-    resetPage()
-  }
+    // reset the filter every time form submit. 
+    // If a previous filter like species : robot is applied and we are not applying the filter this time, 
+    // the filter state still would have species : robot
+    const updatedFormData = {
+      name: '', 
+      type: '',
+      gender: '',
+      species: '',
+      status: '',
+    };
 
-  //handle the name input changes
-  function handleChange(e) {
-    e.preventDefault()
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
+    // update the form with url Search Param filter
+    for (const key in updatedFormData) {
+      if (paramsObject[key]) {
+        updatedFormData[key] = paramsObject[key];
+      }
+    }
+
+    setFilter(updatedFormData);
+  }, [searchParams]);
+
+  // handle the name form submit
+  function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const nameValue = formData.get("name");
+
+    setSearchParams(prevSearchParams => {
+      // Create a new URLSearchParams object
+      const updatedSearchParams = new URLSearchParams(prevSearchParams.toString());
+
+      // Check if nameValue is empty (either "" or null)
+      if (nameValue.trim()) {
+        updatedSearchParams.set('name', nameValue); // Set the "name" parameter to the provided value
+      } else {
+        updatedSearchParams.delete("name"); // This will remove the "name" parameter
+      }
+
+      // Iterate over previous searchParams and set them in the updatedSearchParams
+      for (const [key, value] of prevSearchParams.entries()) {
+        if (key !== 'name') {
+          updatedSearchParams.set(key, value);
+        }
+      }
+
+      return updatedSearchParams;
     });
-  }
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    updateFilter(formData)
   }
 
   useEffect(() => {
@@ -115,8 +135,6 @@ export default function Characters() {
             type="text"
             name="name"
             placeholder="Enter name"
-            value={formData.name}
-            onChange={handleChange}
           />
           <button aria-label="Search button"> <FontAwesomeIcon icon={faSearch} /></button>
         </form>
@@ -128,7 +146,7 @@ export default function Characters() {
           <FontAwesomeIcon icon={showFilter ? faX : faFilter} />
         </button>
 
-        {showFilter && <Filter formData={formData} setFormData={setFormData} updateFilter={updateFilter} />}
+        {showFilter && <Filter {...{setSearchParams}} />}
       </div>
       {/* show a loading animation before loading cards */}
       {loading ? (
