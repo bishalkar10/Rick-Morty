@@ -14,7 +14,7 @@ import {
   fixatureNoCharactersFound
 } from "../fixatures/characterSearch.js";
 
-const url = "http://localhost:5173";
+const url = "http://localhost:5173/characters/";
 
 test.beforeEach(async ({page})=> {
   await page.route(
@@ -199,6 +199,7 @@ test.describe("search Characters", ()=> {
 
   test("I can search by name and apply filter status & gender", async ({page}) => {
     await page.getByPlaceholder("Enter name").fill("morty");
+    await page.getByRole("button", {name : "Search button"}).click(); // code structure has changed. Now forms are uncontrolled; we need to click both buttons
     await page.getByLabel("Choose a gender").selectOption({ value: "male" });
     await page.getByLabel("Choose a status").selectOption({ value: "dead" });
     await page.getByLabel("Apply").click();
