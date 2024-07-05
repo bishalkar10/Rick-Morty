@@ -62,6 +62,7 @@ export default function Characters() {
     }
 
     setFilter(updatedFormData);
+    resetPage()
   }, [searchParams]);
 
   // handle the name form submit
