@@ -1,18 +1,35 @@
 import PropTypes from 'prop-types';
 
-export default function Filter({ formData, setFormData, updateFilter }) {
-  const handleChange = (e) => {
-    // Update the state object with the new value for the changed field
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+
+export default function Filter({ setSearchParams }) {
+
+  function serializeFormQuery(formElement) {
+    const formData = new FormData(formElement);
+    let params = {};
+    for (let [key, value] of formData.entries()) {
+      params[key] = value; // Include all entries, even empty strings
+    }
+    return params;
+  }
 
   const handleSubmit = (event) => {
     event.preventDefault(); // Prevent the default form submission
+    let params = serializeFormQuery(event.target);
 
-    updateFilter(formData);
+    setSearchParams((prevSearchParams) => {
+      const updatedSearchParams = new URLSearchParams(prevSearchParams.toString());
+
+      // Merge new params with existing ones
+      for (const [key, value] of Object.entries(params)) {
+        if (value.trim() === "") {
+          updatedSearchParams.delete(key); // Remove the parameter if the value is an empty string
+        } else {
+          updatedSearchParams.set(key, value); // Otherwise, set the new value
+        }
+      }
+
+      return updatedSearchParams;
+    });
   };
 
   return (
@@ -23,16 +40,12 @@ export default function Filter({ formData, setFormData, updateFilter }) {
           type="text"
           name="type"
           placeholder="Enter Type"
-          value={formData.type}
-          onChange={handleChange}
         />
       </label>
 
       <label>Choose a Gender:
         <select
           name="gender"
-          value={formData.gender}
-          onChange={handleChange}
         >
           <option value="">Select a gender</option>
           <option value="female">Female</option>
@@ -45,8 +58,6 @@ export default function Filter({ formData, setFormData, updateFilter }) {
       <label>Choose a Species:
         <select
           name="species"
-          value={formData.species}
-          onChange={handleChange}
         >
           <option value="">Select a species</option>
           <option value="human">Human</option>
@@ -59,8 +70,6 @@ export default function Filter({ formData, setFormData, updateFilter }) {
       <label>Choose a Status:
         <select
           name="status"
-          value={formData.status}
-          onChange={handleChange}
         >
           <option value="">Select a status</option>
           <option value="alive">Alive</option>
@@ -77,12 +86,5 @@ export default function Filter({ formData, setFormData, updateFilter }) {
 }
 
 Filter.propTypes = {
-  formData: PropTypes.shape({
-    type: PropTypes.string,
-    gender: PropTypes.oneOf(['', 'female', 'male', 'genderless', 'unknown']),
-    species: PropTypes.oneOf(['', 'human', 'alien', 'robot', 'unknown']),
-    status: PropTypes.oneOf(['', 'alive', 'dead', 'unknown'])
-  }).isRequired,
-  setFormData: PropTypes.func.isRequired,
-  updateFilter: PropTypes.func.isRequired,
+  setSearchParams: PropTypes.func.isRequired,
 };
