@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 
-export default function Filter({ setSearchParams }) {
+export default function Filter({ setSearchParams, closeFilter, initialFilters }) {
 
   function serializeFormQuery(formElement) {
     const formData = new FormData(formElement);
@@ -30,6 +30,8 @@ export default function Filter({ setSearchParams }) {
 
       return updatedSearchParams;
     });
+    
+    if (closeFilter) closeFilter();
   };
 
   return (
@@ -40,12 +42,14 @@ export default function Filter({ setSearchParams }) {
           type="text"
           name="type"
           placeholder="Enter Type"
+          defaultValue={initialFilters.type}
         />
       </label>
 
       <label>Choose a Gender:
         <select
           name="gender"
+          defaultValue={initialFilters.gender}
         >
           <option value="">Select a gender</option>
           <option value="female">Female</option>
@@ -58,6 +62,7 @@ export default function Filter({ setSearchParams }) {
       <label>Choose a Species:
         <select
           name="species"
+          defaultValue={initialFilters.species}
         >
           <option value="">Select a species</option>
           <option value="human">Human</option>
@@ -70,6 +75,7 @@ export default function Filter({ setSearchParams }) {
       <label>Choose a Status:
         <select
           name="status"
+          defaultValue={initialFilters.status}
         >
           <option value="">Select a status</option>
           <option value="alive">Alive</option>
@@ -87,4 +93,11 @@ export default function Filter({ setSearchParams }) {
 
 Filter.propTypes = {
   setSearchParams: PropTypes.func.isRequired,
+  closeFilter: PropTypes.func,
+  initialFilters: PropTypes.shape({
+    type: PropTypes.string,
+    gender: PropTypes.string,
+    species: PropTypes.string,
+    status: PropTypes.string,
+  }),
 };

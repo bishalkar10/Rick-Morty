@@ -67,7 +67,6 @@ LocationCard.propTypes = {
 export function LoadingCard() {
   return (
     <div className="loading">
-      loading
       <div className="spin"></div>
     </div>
   )

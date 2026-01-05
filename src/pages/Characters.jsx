@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { CharacterCard } from "../components/Cards";
@@ -30,6 +30,21 @@ export default function Characters() {
     setPage(1) // reset the page to 1 when update the filters
   }
 
+  const filterRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setShowFilter(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   function toggleFilter(event) {
     event.stopPropagation();
     setShowFilter(!showFilter)
@@ -47,7 +62,7 @@ export default function Characters() {
     // If a previous filter like species : robot is applied and we are not applying the filter this time, 
     // the filter state still would have species : robot
     const updatedFormData = {
-      name: '', 
+      name: '',
       type: '',
       gender: '',
       species: '',
@@ -128,26 +143,28 @@ export default function Characters() {
 
   return (
     <main>
-      <div className="filter-container">
+      <div className="filter-container" ref={filterRef}>
         <h2>Characters</h2>
-        <form id="name-form" onSubmit={handleSubmit}>
-          <input
-            id="name"
-            type="text"
-            name="name"
-            placeholder="Enter name"
-          />
-          <button aria-label="Search button"> <FontAwesomeIcon icon={faSearch} /></button>
-        </form>
-        <button
-          id="toggle-filter-btn"
-          aria-label="Toggle filter button"
-          onClick={toggleFilter}
-        >
-          <FontAwesomeIcon icon={showFilter ? faX : faFilter} />
-        </button>
+        <div className="name-form-container">
+          <form id="name-form" onSubmit={handleSubmit}>
+            <input
+              id="name"
+              type="text"
+              name="name"
+              placeholder="Enter name"
+            />
+            <button aria-label="Search button"> <FontAwesomeIcon icon={faSearch} /></button>
+          </form>
 
-        {showFilter && <Filter {...{setSearchParams}} />}
+          <button
+            id="toggle-filter-btn"
+            aria-label="Toggle filter button"
+            onClick={toggleFilter}
+          >
+            <FontAwesomeIcon icon={showFilter ? faX : faFilter} />
+          </button>
+        </div>
+        {showFilter && <Filter setSearchParams={setSearchParams} closeFilter={() => setShowFilter(false)} initialFilters={filter} />}
       </div>
       {/* show a loading animation before loading cards */}
       {loading ? (
